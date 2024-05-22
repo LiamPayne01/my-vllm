@@ -164,6 +164,7 @@ class LlamaDecoderLayer(nn.Module):
         self,
         config: LlamaConfig,
         linear_method: Optional[LinearMethodBase] = None,
+        sliding_window: Optional[int] = None,
     ) -> None:
         super().__init__()
         self.hidden_size = config.hidden_size
@@ -171,7 +172,7 @@ class LlamaDecoderLayer(nn.Module):
         rope_scaling = getattr(config, "rope_scaling", None)
         max_position_embeddings = getattr(config, "max_position_embeddings",
                                           8192)
-        sliding_window = getattr(config, "sliding_window", None)
+        # sliding_window = getattr(config, "sliding_window", None)
         self.self_attn = LlamaAttention(
             hidden_size=self.hidden_size,
             num_heads=config.num_attention_heads,
@@ -245,9 +246,14 @@ class LlamaModel(nn.Module):
             org_num_embeddings=config.vocab_size,
         )
         self.layers = nn.ModuleList([
-            LlamaDecoderLayer(config, linear_method)
-            for _ in range(config.num_hidden_layers)
+            (print(f"i: {i}, sliding_window: {8192 if (i+1) % 4 != 0 else None}"), 
+            LlamaDecoderLayer(config, linear_method, sliding_window=8192 if (i+1) % 4 != 0 else None))[1]
+            for i in range(config.num_hidden_layers)
         ])
+        # self.layers = nn.ModuleList([
+        #     LlamaDecoderLayer(config, linear_method)
+        #     for _ in range(config.num_hidden_layers)
+        # ])
         self.norm = RMSNorm(config.hidden_size, eps=config.rms_norm_eps)
 
     def get_input_embeddings(self, input_ids: torch.Tensor) -> torch.Tensor:
