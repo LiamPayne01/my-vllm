@@ -246,8 +246,8 @@ class LlamaModel(nn.Module):
             org_num_embeddings=config.vocab_size,
         )
         self.layers = nn.ModuleList([
-            (print(f"i: {i}, sliding_window: {8192 if (i+1) % 4 != 0 else None}"), 
-            LlamaDecoderLayer(config, linear_method, sliding_window=8192 if (i+1) % 4 != 0 else None))[1]
+            (print(f"i: {i}, sliding_window: {4096 if (i+1) % 2 != 0 else None}"), 
+            LlamaDecoderLayer(config, linear_method, sliding_window=4096 if (i+1) % 2 != 0 else None))[1]
             for i in range(config.num_hidden_layers)
         ])
         # self.layers = nn.ModuleList([
